@@ -3,6 +3,8 @@
 package env
 
 import (
+	"fmt"
+
 	"github.com/newrelic/newrelic-diagnostics-cli/logger"
 	"github.com/newrelic/newrelic-diagnostics-cli/tasks"
 	"github.com/shirou/gopsutil/process"
@@ -31,17 +33,24 @@ func (t BaseEnvDetectLanguage) Dependencies() []string {
 func (t BaseEnvDetectLanguage) Execute(options tasks.Options, upstream map[string]tasks.Result) tasks.Result {
 
 	apmLanguages := []string{"java", "node", "ruby", "python", "dotnet", "w3wp.exe"} // the latter represents .NET framework
-	var foundProcesses map[string][]process.Process
+	foundProcesses := make(map[string][]process.Process)
 	for _, lang := range apmLanguages {
 		processes, err := tasks.FindProcessByName(lang)
 		if err != nil {
-			logger.Infof("processes not found for %s: %s", lang, err)
+			return tasks.Result{
+				Status:  tasks.Error,
+				Summary: fmt.Sprintf("we ran into an error while trying to find a process running for %s: %s", lang, err),
+				Payload: foundProcesses,
+			}
+		}
+		if processes == nil {
+			logger.Debugf("no processes found for: %s", lang)
 		} else {
 			foundProcesses[lang] = processes
 		}
 	}
 
-	if foundProcesses != nil {
+	if len(foundProcesses) > 0 {
 		return tasks.Result{
 			Status:  tasks.Info,
 			Summary: "Collected language information",
@@ -51,7 +60,7 @@ func (t BaseEnvDetectLanguage) Execute(options tasks.Options, upstream map[strin
 
 	return tasks.Result{
 		Status:  tasks.Warning,
-		Summary: "we did not find any references to the programmin language being used for this app",
+		Summary: "we did not find any references to the programming language being used in this environment",
 	}
 
 }
