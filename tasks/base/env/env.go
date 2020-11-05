@@ -25,4 +25,5 @@ func RegisterWith(registrationFunc func(tasks.Task, bool)) {
 		evalSymlink: filepath.EvalSymlinks,
 	}, true)
 	registrationFunc(BaseEnvDetectAzure{}, true)
+	registrationFunc(BaseEnvDetectLanguage{}, true)
 }
