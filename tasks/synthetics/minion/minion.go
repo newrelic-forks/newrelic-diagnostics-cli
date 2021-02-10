@@ -14,4 +14,5 @@ func RegisterWith(registrationFunc func(tasks.Task, bool)) {
 	registrationFunc(SyntheticsMinionHordeConnect{}, false)
 	registrationFunc(SyntheticsMinionDetectCPM{executeCommand: tasks.CmdExecutor}, true)
 	registrationFunc(SyntheticsMinionCollectLogs{executeCommand: tasks.BufferedCommandExec}, true)
+	registrationFunc(SyntheticsMinionCollectK8sInfo{}, false)
 }
