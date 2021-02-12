@@ -1,7 +1,6 @@
 package minion
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 
@@ -30,25 +29,22 @@ func (p SyntheticsMinionCollectK8sInfo) Dependencies() []string {
 // Execute - The core work within each task
 func (p SyntheticsMinionCollectK8sInfo) Execute(options tasks.Options, upstream map[string]tasks.Result) tasks.Result {
 
-	fmt.Println("Calling CKI script ....")
-
 	//bash -c "$(curl -s https://raw.githubusercontent.com/keegoid-nr/cki/v0.6/cki.sh)"
 
-	// _,err := tasks.CmdExecutor("bash", "-c", "$(curl -s https://raw.githubusercontent.com/keegoid-nr/cki/v0.6/cki.sh)")
-
-	cmd := exec.Command("bash", "c", "$(curl -s https://raw.githubusercontent.com/keegoid-nr/cki/v0.6/cki.sh)")
-	// redirect the output to terminal
+	ckiScript := "https://raw.githubusercontent.com/keegoid-nr/cki/v0.6/cki.sh"
+	cmd := exec.Command("bash", "-c", "curl -s "+ckiScript+" | bash")
+	// cmd := exec.Command("bash", "-c", "../scripts/cki.sh")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 
-	cmd.Run()
-
-	// if err != nil {
-	// 	return tasks.Result{
-	// 		Status: tasks.Error,
-	// 		Summary: "Unable to run CKI script: " + err.Error(),
-	// 	}
-	// }
+	err := cmd.Run()
+	if err != nil {
+		return tasks.Result{
+			Status:  tasks.Error,
+			Summary: "Unable to run CKI script: " + err.Error(),
+		}
+	}
 
 	return tasks.Result{
 		Status:  tasks.Info,
